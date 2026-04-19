@@ -99,6 +99,7 @@ void printPath(pair<int,int> exitcell,
 
     // Walk backward from exit to entrance
     while (!(r == ent_r && c == ent_c)) {
+        cout<<"r: "<<r<<", c: "<<c<<endl;
         path.push_back({r, c});
         int pr = parent_r[r][c];
         int pc = parent_c[r][c];
@@ -117,9 +118,31 @@ void printPath(pair<int,int> exitcell,
 // STUDENTS IMPLEMENT DFS HERE
 // Add arguments, return type, and logic
 // ----------------------------------------------------------
-bool dfs(const vector<vector<int>>& maze, const vector<vector<bool>>& visited, pair<int,int> entrance, pair<int,int> exit, const vector<vector<pair<int, int>>>& parent) {
-    // Your code here
+vector<pair<int, int>> neighbors(const vector<vector<int>>& maze, const vector<vector<bool>>& visited, const pair<int, int> &pos) {
+    vector<pair<int, int>> neighbors;
+    for (auto offset : vector<pair<int, int>>{{-1, 0}, {1, 0}, {0, 1}, {0, -1}}) {
+        int r = pos.first + offset.first;
+        int c = pos.second + offset.second;
+        if (r >= 0 && c >= 0 && r < maze.size() && c < maze[0].size() && maze[r][c] == 0 && !visited[r][c]) {
+            neighbors.push_back({r, c});
+        }
+    }
+    return neighbors;
+}
 
+bool dfs(const vector<vector<int>>& maze, vector<vector<bool>>& visited, const pair<int,int> &entrance, const pair<int,int> &exit, vector<vector<int>>& parent_r, vector<vector<int>>& parent_c) {
+    // Your code here
+    visited[entrance.first][entrance.second] = true;
+    const auto next_pos = neighbors(maze, visited, entrance);
+    for (const auto s : next_pos) {
+        parent_r[s.first][s.second] = entrance.first;
+        parent_c[s.first][s.second] = entrance.second;
+    }
+    for (auto s : next_pos) {
+        if (s.first == exit.first && s.second == exit.second) return true;
+        if (dfs(maze, visited, s, exit, parent_r, parent_c)) return true;
+    }
+    return false;
 }
 
 
@@ -147,29 +170,20 @@ int main() {
     printMaze(maze, entrance.first, entrance.second, exitcell.first, exitcell.second);
 
     // Students must use these
-    const vector<vector<bool>> visited(N, vector<bool>(M, false));
-    const vector<vector<int>> parent_r(N, vector<int>(M, -1));
-    const vector<vector<int>> parent_c(N, vector<int>(M, -1));
+    vector<vector<bool>> visited(N, vector<bool>(M, false));
+    vector<vector<int>> parent_r(N, vector<int>(M, -1));
+    vector<vector<int>> parent_c(N, vector<int>(M, -1));
 
     // ------------------------------------------------------
     // STUDENT WORK:
     // Call your DFS, track visited, and fill parent_r and parent_c
     // ------------------------------------------------------
-    vector<vector<pair<int, int>>> parent(N, vector<pair<int, int>>(M));
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            parent[i][j].first = parent_r[i][j];
-            parent[i][j].second = parent_c[i][j];
-        }
-    }
-
-    const bool found = dfs(maze, visited, entrance, exitcell, parent);
-
+    const bool found = dfs(maze, visited, entrance, exitcell, parent_r, parent_c);
     // ------------------------------------------------------
     // STUDENT WORK:
     // If found, print the path
     // ------------------------------------------------------
-    if (found) printPath(exitcell, parent_r, parent_c, exitcell.first, exitcell.second);
+    if (found) printPath(exitcell, parent_r, parent_c, entrance.second, entrance.first);
     else cout << "\nNo path exists.\n";
 
     return 0;
