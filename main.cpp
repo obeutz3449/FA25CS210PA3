@@ -99,7 +99,10 @@ void printPath(pair<int,int> exitcell,
 
     // Walk backward from exit to entrance
     while (!(r == ent_r && c == ent_c)) {
-        cout<<"r: "<<r<<", c: "<<c<<endl;
+        if (r == -1 || c == -1) {
+            cout << "Error at: ("<<path[path.size() - 1].first << ", "<<path[path.size() - 1].second << ")";
+            break;
+        }
         path.push_back({r, c});
         int pr = parent_r[r][c];
         int pc = parent_c[r][c];
@@ -120,11 +123,11 @@ void printPath(pair<int,int> exitcell,
 // ----------------------------------------------------------
 vector<pair<int, int>> neighbors(const vector<vector<int>>& maze, const vector<vector<bool>>& visited, const pair<int, int> &pos) {
     vector<pair<int, int>> neighbors;
-    for (auto offset : vector<pair<int, int>>{{-1, 0}, {1, 0}, {0, 1}, {0, -1}}) {
-        int r = pos.first + offset.first;
-        int c = pos.second + offset.second;
+    for (int i = 0; i < 4; i++) {
+        int r = pos.first + dr[i];
+        int c = pos.second + dc[i];
         if (r >= 0 && c >= 0 && r < maze.size() && c < maze[0].size() && maze[r][c] == 0 && !visited[r][c]) {
-            neighbors.push_back({r, c});
+            neighbors.emplace_back(r, c);
         }
     }
     return neighbors;
@@ -132,17 +135,21 @@ vector<pair<int, int>> neighbors(const vector<vector<int>>& maze, const vector<v
 
 bool dfs(const vector<vector<int>>& maze, vector<vector<bool>>& visited, const pair<int,int> &entrance, const pair<int,int> &exit, vector<vector<int>>& parent_r, vector<vector<int>>& parent_c) {
     // Your code here
+    cout<<"("<<entrance.first<<", "<<entrance.second<<")\n";
     visited[entrance.first][entrance.second] = true;
     const auto next_pos = neighbors(maze, visited, entrance);
     for (const auto s : next_pos) {
         parent_r[s.first][s.second] = entrance.first;
         parent_c[s.first][s.second] = entrance.second;
+        visited[s.first][s.second] = true;
+        //cout<<"Set ("<<s.first<<", "<<s.second<<")'s parent to ("<<entrance.first<<", "<<entrance.second<<")\n";
     }
+    bool found = false;
     for (auto s : next_pos) {
-        if (s.first == exit.first && s.second == exit.second) return true;
-        if (dfs(maze, visited, s, exit, parent_r, parent_c)) return true;
+        if (s.first == exit.first && s.second == exit.second) found = true;
+        else found = found || dfs(maze, visited, s, exit, parent_r, parent_c);
     }
-    return false;
+    return found;
 }
 
 
@@ -161,7 +168,8 @@ int main() {
     // Pick entrance and exit
     const pair<int,int> entrance = chooseBoundaryCell(maze);
     pair<int,int> exitcell = chooseBoundaryCell(maze);
-
+    cout<<"Entrance: ("<<entrance.first<<", "<<entrance.second<<")\n";
+    cout<<"Exit: ("<<exitcell.first<<", "<<exitcell.second<<")\n";
     while (exitcell == entrance) {
         exitcell = chooseBoundaryCell(maze);
     }
