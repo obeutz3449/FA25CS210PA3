@@ -138,12 +138,11 @@ bool dfs(const vector<vector<int>>& maze, vector<vector<bool>>& visited, const p
         parent_c[s.first][s.second] = entrance.second;
         visited[s.first][s.second] = true;
     }
-    bool found = false;
     for (auto s : next_pos) {
-        if (s.first == exit.first && s.second == exit.second) found = true;
-        else found = found || dfs(maze, visited, s, exit, parent_r, parent_c);
+        if (s.first == exit.first && s.second == exit.second) return true;
+        if (dfs(maze, visited, s, exit, parent_r, parent_c)) return true;
     }
-    return found;
+    return false;
 }
 
 // ----------------------------------------------------------
