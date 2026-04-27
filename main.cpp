@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <stack>
 
 using namespace std;
 
@@ -117,6 +118,8 @@ void printPath(pair<int,int> exitcell,
 // STUDENTS IMPLEMENT DFS HERE
 // Add arguments, return type, and logic
 // ----------------------------------------------------------
+
+/*
 vector<pair<int, int>> neighbors(const vector<vector<int>>& maze, const vector<vector<bool>>& visited, const pair<int, int> &pos) {
     vector<pair<int, int>> neighbors;
     for (int i = 0; i < 4; i++) {
@@ -141,6 +144,32 @@ bool dfs(const vector<vector<int>>& maze, vector<vector<bool>>& visited, const p
     for (auto s : next_pos) {
         if (s.first == exit.first && s.second == exit.second) return true;
         if (dfs(maze, visited, s, exit, parent_r, parent_c)) return true;
+    }
+    return false;
+}
+*/
+
+bool dfs(const vector<vector<int>>& maze, vector<vector<bool>>& visited, const pair<int,int> &entrance, const pair<int,int> &exit, vector<vector<int>>& parent_r, vector<vector<int>>& parent_c) {
+    // Your code here
+    stack<pair<int,int>> s;
+    visited[entrance.first][entrance.second] = true;
+    s.emplace(entrance.first, entrance.second);
+    while (!s.empty()) {
+        const pair<int,int> current = s.top();
+        s.pop();
+        for (int i = 0; i < 4; i++) {
+            int r = current.first + dr[i];
+            int c = current.second + dc[i];
+            if ((r >= 0 && c >= 0 && r < maze.size() && c < maze[r].size()) && maze[r][c] == 0 && !visited[r][c]) {
+                visited[r][c] = true;
+                parent_r[r][c] = current.first;
+                parent_c[r][c] = current.second;
+                if (r == exit.first && c == exit.second) {
+                    return true;
+                }
+                s.emplace(r, c);
+            }
+        }
     }
     return false;
 }
